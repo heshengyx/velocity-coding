@@ -1,0 +1,73 @@
+package ${package}.mapper;
+
+import java.util.List;
+import org.apache.ibatis.annotations.Param;
+import ${package}.entity.${Entity};
+import ${package}.param.${Entity}QueryParam;
+${imports}
+
+public interface I${Entity}Mapper {
+
+    /**
+     * 新增
+     * @param ${entity}
+     * @return
+     */
+    int save(@Param("param") ${Entity} ${entity});
+    /**
+     * 批量新增
+     * @param ${entity}s
+     * @return
+     */
+    int saveBatch(@Param("list") List<${Entity}> ${entity}s);
+    
+    /**
+     * 修改
+     * @param ${entity}
+     */
+    int update(@Param("param") ${Entity} ${entity});
+    
+    /**
+     * 根据ID删除
+     * @param id
+     */
+    int deleteById(@Param("id") String id);
+    
+    /**
+     * 多条件删除
+     * @param ${entity}
+     */
+    int delete(@Param("param") ${Entity} ${entity});
+    
+    /**
+     * 根据ID批量删除
+     * @param id
+     */
+    int deleteByIds(@Param("ids") List<String> ids);
+    
+    /**
+     * 根据ID查找
+     * @param id
+     * @return
+     */
+    ${Entity} getById(@Param("id") String id);
+    
+    /**
+     * 多条件查找
+     * @param ${entity}
+     * @return
+     */
+    ${Entity} getData(@Param("param") ${Entity} ${entity});
+    
+    int count(@Param("param") ${Entity}QueryParam param);
+    List<${Entity}> query(@Param("param") ${Entity}QueryParam param,
+            @Param("start") int start, @Param("end") int end);
+    
+    /**
+     * 查找全部
+     * @param param
+     * @return
+     */
+    List<${Entity}> queryAll(@Param("param") ${Entity}QueryParam param);
+}
+

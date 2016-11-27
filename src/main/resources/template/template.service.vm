@@ -1,0 +1,82 @@
+package ${package}.service;
+
+import java.util.List;
+import ${package}.entity.${Entity};
+import ${package}.param.${Entity}QueryParam;
+import ${package}.page.IPage;
+import ${package}.data.${Entity}Data;
+${imports}
+
+public interface I${Entity}Service {
+
+    /**
+     * 新增
+     * @param ${entity}
+     */
+    void save(${Entity} ${entity});
+    /**
+     * 批量新增
+     * @param ${entity}s
+     * @return
+     */
+    void saveBatch(List<${Entity}> ${entity}s);
+    /**
+     * 批量新增
+     * @param data
+     * @return
+     */
+    void saveBatchData(${Entity}Data data);
+    
+    /**
+     * 修改
+     * @param ${Entity}
+     */
+    void update(${Entity} ${entity});
+    
+    /**
+     * 根据ID删除
+     * @param id
+     */
+    void deleteById(String id);
+    
+    /**
+     * 多条件删除
+     * @param ${entity}
+     */
+    void delete(${Entity} ${entity});
+    
+    /**
+     * 根据ID批量删除
+     * @param id
+     */
+    void deleteByIds(List<String> ids);
+    
+    /**
+     * 根据ID查找
+     * @param id
+     * @return
+     */
+    ${Entity} getById(String id);
+    
+    /**
+     * 多条件查找
+     * @param ${entity}
+     * @return
+     */
+    ${Entity} getData(${Entity} ${entity});
+    
+    /**
+     * 保存或修改
+     * @param ${entity}
+     */
+    void saveOrUpdate(${Entity} ${entity});
+    
+    /**
+     * 分页查询
+     * @param param
+     * @param page
+     * @param rows
+     * @return
+     */
+    IPage<${Entity}> query(${Entity}QueryParam param);
+}

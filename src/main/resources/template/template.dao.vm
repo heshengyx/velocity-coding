@@ -1,0 +1,78 @@
+package ${package}.dao;
+
+import java.util.List;
+
+import ${package}.entity.${Entity};
+import ${package}.param.${Entity}QueryParam;
+${imports}
+
+public interface I${Entity}Dao {
+
+    /**
+     * 新增
+     * @param ${entity}
+     * @return
+     */
+    int save(${Entity} ${entity});
+    /**
+     * 批量新增
+     * @param ${entity}s
+     * @return
+     */
+    int saveBatch(List<${Entity}> ${entity}s);
+    
+    /**
+     * 修改
+     * @param ${entity}
+     */
+    int update(${Entity} ${entity});
+    
+    /**
+     * 根据ID删除
+     * @param id
+     */
+    int deleteById(String id);
+    
+    /**
+     * 多条件删除
+     * @param ${entity}
+     */
+    int delete(${Entity} ${entity});
+    
+    /**
+     * 根据ID批量删除
+     * @param id
+     */
+    int deleteByIds(List<String> ids);
+    
+    /**
+     * 根据ID查找
+     * @param id
+     * @return
+     */
+    ${Entity} getById(String id);
+    
+    /**
+     * 多条件查找
+     * @param ${entity}
+     * @return
+     */
+    ${Entity} getData(${Entity} ${entity});
+
+    int count(${Entity}QueryParam param);
+    /**
+     * 分页查询
+     * @param param
+     * @param start
+     * @param end
+     * @return
+     */
+    List<${Entity}> query(${Entity}QueryParam param, int start, int end);
+    
+    /**
+     * 查找全部
+     * @param param
+     * @return
+     */
+    List<${Entity}> queryAll(${Entity}QueryParam param);
+}

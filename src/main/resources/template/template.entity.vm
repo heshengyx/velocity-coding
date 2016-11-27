@@ -1,0 +1,20 @@
+package ${package}.entity;
+
+import java.io.Serializable;
+${imports}
+
+/**
+ * ${Entity}
+ * @author hsheng1
+ *
+ */
+public class ${Entity} extends BaseEntity implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+	${attributes}
+	
+	${methods}
+}

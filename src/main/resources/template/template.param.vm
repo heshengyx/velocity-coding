@@ -1,0 +1,15 @@
+package ${package}.param;
+
+import java.io.Serializable;
+${imports}
+
+public class ${Entity}QueryParam extends QueryParam implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+    ${attributes}
+    
+    ${methods}
+}

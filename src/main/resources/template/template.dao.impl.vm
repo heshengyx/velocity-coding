@@ -1,0 +1,75 @@
+package ${package}.dao.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import ${package}.dao.I${Entity}Dao;
+import ${package}.entity.${Entity};
+import ${package}.mapper.I${Entity}Mapper;
+import ${package}.param.${Entity}QueryParam;
+${imports}
+
+@Repository
+public class ${Entity}DaoImpl implements I${Entity}Dao {
+
+    @Autowired
+    private I${Entity}Mapper ${Entity}Mapper;
+    
+    @Override
+    public int save(${Entity} ${entity}) {
+        return ${Entity}Mapper.save(${entity});
+    }
+
+    @Override
+    public int saveBatch(List<${Entity}> ${entity}s) {
+        return ${Entity}Mapper.saveBatch(${entity}s);
+    }
+    
+    @Override
+    public int update(${Entity} ${entity}) {
+        return ${Entity}Mapper.update(${entity});
+    }
+
+    @Override
+    public int deleteById(String id) {
+        return ${Entity}Mapper.deleteById(id);
+    }
+
+    @Override
+    public int delete(${Entity} ${entity}) {
+        return ${Entity}Mapper.delete(${entity});
+    }
+    
+    @Override
+    public int deleteByIds(List<String> ids) {
+        return ${Entity}Mapper.deleteByIds(ids);
+    }
+
+    @Override
+    public ${Entity} getById(String id) {
+        return ${Entity}Mapper.getById(id);
+    }
+
+    @Override
+    public ${Entity} getData(${Entity} ${entity}) {
+        return ${Entity}Mapper.getData(${entity});
+    }
+
+    @Override
+    public int count(${Entity}QueryParam param) {
+        return ${Entity}Mapper.count(param);
+    }
+
+    @Override
+    public List<${Entity}> query(${Entity}QueryParam param, int start,
+            int end) {
+        return ${Entity}Mapper.query(param, start, end);
+    }
+
+    @Override
+    public List<${Entity}> queryAll(${Entity}QueryParam param) {
+        return ${Entity}Mapper.queryAll(param);
+    }
+}

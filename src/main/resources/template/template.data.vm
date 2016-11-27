@@ -1,0 +1,27 @@
+package ${package}.data;
+
+import java.io.Serializable;
+${imports}
+
+/**
+ * ${Entity}
+ * @author hsheng1
+ *
+ */
+public class ${Entity}Data implements Serializable {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+	${attributes}
+	private String createBy;
+	
+	${methods}
+	public String getCreateBy() {
+        return createBy;
+    }
+    public void setCreateBy(String createBy) {
+        this.createBy = createBy;
+    }
+}

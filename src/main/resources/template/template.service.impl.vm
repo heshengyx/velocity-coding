@@ -1,0 +1,165 @@
+package ${package}.service.impl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import ${package}.dao.I${Entity}Dao;
+import ${package}.data.${Entity}Data;
+import ${package}.entity.${Entity};
+import ${package}.enums.StateEnum;
+import ${package}.page.IPage;
+import ${package}.page.IPagination;
+import ${package}.page.Pager;
+import ${package}.param.${Entity}QueryParam;
+import ${package}.service.I${Entity}Service;
+import ${package}.util.UUIDGeneratorUtil;
+${imports}
+
+@Service("${entity}Service")
+public class ${Entity}ServiceImpl implements I${Entity}Service {
+
+    @Autowired
+    private I${Entity}Dao ${entity}Dao;
+    
+    @Override
+    public void save(${Entity} ${entity}) {
+        String name = ${entity}.getName();
+        if (StringUtils.isEmpty(name)) {
+            throw new DataAccessResourceFailureException("名称不能为空");
+        }
+        ${entity}.setId(UUIDGeneratorUtil.getUUID());
+        ${entity}.setCreateTime(new Date());
+        
+        int count = ${entity}Dao.save(${entity});
+        if (count == 0) {
+            throw new DataAccessResourceFailureException("数据保存失败");
+        }
+    }
+
+    @Override
+    public void saveBatch(List<${Entity}> ${entity}s) {
+        ${Entity} ${entity} = null;
+        for (int i = 0; i < ${entity}s.size(); i++) {
+            ${entity} = ${entity}s.get(i);
+            ${entity}.setId(UUIDGeneratorUtil.getUUID());
+            ${entity}.setCreateTime(new Date());
+            ${entity}s.set(i, ${entity});
+        }
+        int count = ${entity}Dao.saveBatch(${entity}s);
+        if (count == 0) {
+            throw new DataAccessResourceFailureException("数据保存失败");
+        }
+    }
+    
+    @Override
+    public void saveBatchData(${Entity}Data data) {
+        #if("" != $attribute)
+        List<${Entity}> ${entity}s = new ArrayList<${Entity}>();
+        ${Entity} ${entity} = null;
+        ${attributes}
+        for (int i = 0; i < ${attribute}.length; i++) {
+            ${entity} = new ${Entity}();
+            ${entity}.setId(UUIDGeneratorUtil.getUUID());
+            ${methods}
+            ${entity}.setCreateTime(new Date());
+            ${entity}.setCreateBy(data.getCreateBy());
+            ${entity}s.add(${entity});
+        }
+        int count = ${entity}Dao.saveBatch(${entity}s);
+        if (count == 0) {
+            throw new DataAccessResourceFailureException("数据保存失败");
+        }
+        #end
+    }
+    
+    @Override
+    public void update(${Entity} ${entity}) {
+        String name = ${entity}.getName();
+        if (StringUtils.isEmpty(name)) {
+            throw new DataAccessResourceFailureException("名称不能为空");
+        }
+        ${entity}.setUpdateTime(new Date());
+        int count = ${entity}Dao.update(${entity});
+        if (count == 0) {
+            throw new DataAccessResourceFailureException("数据修改失败");
+        }
+    }
+
+    @Override
+    public void deleteById(String id) {
+        if (!StringUtils.isEmpty(id)) {
+            int count = ${entity}Dao.deleteById(id);
+            if (count == 0) {
+                throw new DataAccessResourceFailureException("数据删除失败");
+            }
+        } else {
+            throw new DataAccessResourceFailureException("数据删除失败");
+        }
+    }
+    
+    @Override
+    public void deleteByIds(List<String> ids) {
+        if (!CollectionUtils.isEmpty(ids)) {
+            int count = ${entity}Dao.deleteByIds(ids);
+            if (count == 0) {
+                throw new DataAccessResourceFailureException("数据删除失败");
+            }
+        } else {
+            throw new DataAccessResourceFailureException("数据删除失败");
+        }
+    }
+
+    @Override
+    public void delete(${Entity} ${entity}) {
+        int count = ${entity}Dao.delete(${entity});
+        if (count == 0) {
+            throw new DataAccessResourceFailureException("数据删除失败");
+        }
+    }
+
+    @Override
+    public ${Entity} getById(String id) {
+        return ${entity}Dao.getById(id);
+    }
+
+    @Override
+    public ${Entity} getData(${Entity} ${entity}) {
+        return ${entity}Dao.getData(${entity});
+    }
+    
+    @Override
+    public void saveOrUpdate(${Entity} ${entity}) {
+        if (StringUtils.isEmpty(${entity}.getId())) {
+            save(${entity});
+        } else {
+            update(${entity});
+        }
+    }
+
+    @Override
+    public IPage<${Entity}> query(final ${Entity}QueryParam param) {
+        int page = param.getPage() <= 0 ? 1 : param.getPage();
+        int rows = param.getRows() <= 0 ? 10 : param.getRows();
+        return Pager.execute(new IPagination<${Entity}>() {
+
+            @Override
+            public int count() {
+                return ${entity}Dao.count(param);
+            }
+
+            @Override
+            public List<${Entity}> query(int start, int end) {
+                return ${entity}Dao.query(param, start, end);
+            }
+        }, page, rows);
+    }
+}
