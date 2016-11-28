@@ -27,9 +27,10 @@
     <form id="searchForm" method="post">
     <table>
         <tr>
-        	<td>出生日期：</td>
-<td><input type="text" class="easyui-datebox" id="birthBeginDate" style="width:100px;">~
-<input type="text" class="easyui-datebox" id="birthEndDate" style="width:100px;"></td>
+        	<td class="td-right">终端名称：</td>
+<td><input type="text" id="nameSearch" style="width:150px;"></td>
+<td class="td-right">终端编码：</td>
+<td><input type="text" id="codeSearch" style="width:150px;"></td>
 
             <td class="td-right">创建时间：</td>
             <td>
@@ -63,18 +64,18 @@
                 style="width:330px;height:160px;padding:10px;">
         <form id="editForm" method="post">
         <input type="hidden" name="id" id="dataId">
-        <input type="hidden" name="parentId" id="parentId" value="${param.parentId}">
         <table class="table">
             <tr>
-                <td align="right">终端管理名称：</td>
-                <td>
-                <input class="easyui-validatebox" type="text" name="name" id="nameEdit" style="width:150px;" data-options="required:true"></td>
-            </tr>
-            <tr>
-                <td align="right">终端管理编码：</td>
-                <td>
-                <input class="easyui-validatebox" type="text" name="code" id="codeEdit" style="width:150px;" data-options="required:true"></td>
-            </tr>
+<td align="right">终端名称：</td>
+<td>
+<input class="easyui-validatebox" type="text" name="name" id="nameEdit" style="width:150px;" data-options="required:true"></td>
+</tr>
+<tr>
+<td align="right">终端编号：</td>
+<td>
+<input class="easyui-validatebox" type="text" name="code" id="codeEdit" style="width:150px;" data-options="required:true"></td>
+</tr>
+
             <tr>
                 <td></td>
                 <td><a class="easyui-linkbutton" id="saveBtn" href="#" data-options="iconCls:'icon-save'">保存</a></td>
@@ -98,8 +99,8 @@
         <table id="dgBatch" style="width:100%;">
             <thead>
                 <tr>
-                    <th data-options="field:'name',width:100,editor:{type:'text'}">终端管理名称</th>
-                    <th data-options="field:'code',width:100,editor:{type:'text'}">终端管理编码</th>
+                    <th data-options="field:'name',editor:{type:'text'}">终端名称</th>
+
                 </tr>
             </thead>
         </table>
@@ -128,7 +129,8 @@
             checkOnSelect: true,
             columns: [[
                 {field: 'id', title: '选择', width: 30, checkbox: true},
-                {field: 'name', title: '姓名'},
+                {field: 'name', title: '终端名称'},
+{field: 'code', title: '终端编号'},
 
                 {field: 'createTime', title: '创建时间', formatter:function(val, row, idx) {
                     return to_date_hms(val);
@@ -146,18 +148,21 @@
         
         $('#searchBtn').click(function() {
             $('#datagrid').datagrid('load', {
+                name: $('#nameSearch').val(),
+code: $('#codeSearch').val(),
+
                 createDateBegin: $('#createDateBegin').datebox('getValue'),
                 createDateEnd: $('#createDateEnd').datebox('getValue')
             });
         });
         
         $('#addBtn').click(function() {
-            $("#editWin").window({title:"新增终端管理"}).window("open").window("center");
+            $("#editWin").window({title:"新增"}).window("open").window("center");
         });
         
         $('#addBatchBtn').click(function() {
             append();
-            $("#editBatchWin").window({title:"新增终端管理-批量"}).window("open").window("center");
+            $("#editBatchWin").window({title:"批量新增"}).window("open").window("center");
         });
         
         $('#deleteBtn').click(function() {
@@ -173,7 +178,7 @@
                     fn: function(r){
                         if (r){
                             $.messager.progress();
-                            var url = "${ctx}/manager/organization/deleteBatch"
+                            var url = "${ctx}/manager/terminal/deleteBatch"
                             var params = {
                                 ids: getRowIds(rows)    
                             };
@@ -181,7 +186,6 @@
                                 $.messager.progress('close');
                                 if (result.status) {
                                     $.messager.alert('消息', '删除成功', 'info');  
-                                    window.parent.trees();
                                     $('#datagrid').datagrid('reload');
                                 } else {
                                     $.messager.alert('消息', result.message, 'error');
@@ -199,7 +203,7 @@
         });
         
         $('#editForm').form({
-            url: '${ctx}/manager/organization/saveOrUpdate',
+            url: '${ctx}/manager/terminal/saveOrUpdate',
             onSubmit: function() {
                 var isValid = $(this).form('validate');
                 if (!isValid) {$.messager.progress('close');}
@@ -211,7 +215,6 @@
                 if (result.status) {
                     $.messager.alert('消息', '保存成功', 'info', function(r) {
                         $('#editWin').window('close');
-                        window.parent.trees();
                         $('#datagrid').datagrid('reload');
                         $('#editForm').form('reset');
                     });
@@ -223,15 +226,16 @@
     });
     function updateById(id) {
         $.messager.progress();
-        var url = "${ctx}/manager/organization/getById"
+        var url = "${ctx}/manager/terminal/getById"
         var params = {id: id};
         $.post(url, params, function(result) {
             $.messager.progress('close');
             if (result.status) {
                 $('#dataId').val(result.data.id);
                 $('#nameEdit').val(result.data.name);
-                $('#codeEdit').val(result.data.code);
-                $("#editWin").window({title:"修改终端管理"}).window("open").window("center");
+$('#codeEdit').val(result.data.code);
+
+                $("#editWin").window({title:"修改"}).window("open").window("center");
             } else {
                 $.messager.alert('消息', result.message, 'error');
             }
@@ -282,18 +286,16 @@
             if (rows.length) {
                 var inserted = $('#dgBatch').datagrid('getChanges', "inserted");
                 if (inserted.length) {
-                    var $(form) = $('#editBatchForm');
-                    $(form).children().remove();
+                    var form = $('#editBatchForm');
+                    form.children().remove();
                     for (var i=0; i<inserted.length; i++) {
-                        $(form).append('<input type="hidden" name="name" value="' + inserted[i].name + '">');
-                        $(form).append('<input type="hidden" name="code" value="' + inserted[i].code + '">');
+                        form.append('<input type="hidden" name="name" value="' + inserted[i].name + '">');
+
                     }
-                    $(form).append('<input type="hidden" name="parentId" value="${param.parentId}">');
-                    var url = "${ctx}/manager/organization/saveBatch"
+                    var url = "${ctx}/manager/terminal/saveBatch"
                     $.post(url, $form.serialize(), function(result) {
                         if (result.status) {
                             $('#editBatchWin').window('close');
-                            window.parent.trees();
                             $('#datagrid').datagrid('reload');
                         } else {
                             $.messager.alert({

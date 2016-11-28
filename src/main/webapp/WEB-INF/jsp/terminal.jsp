@@ -3,13 +3,13 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>${title}-数据收集平台</title>
+		<title>终端管理-数据收集平台</title>
 	</head>
 	
 	<body>
-		<div data-options="region:'west',split:true" title="${title}" style="width:20%;min-width:180px;padding:5px;">
+		<div data-options="region:'west',split:true" title="终端管理" style="width:20%;min-width:180px;padding:5px;">
 			<ul class="easyui-tree" id="trees">
-				<li iconCls="icon-base"><span>${title}</span><ul><li iconCls="icon-gears"><a href="#" onclick="open1('parser')">${title}</a></li></ul>
+				<li iconCls="icon-base"><span>终端管理</span><ul><li iconCls="icon-gears"><a href="#" onclick="open1('parser')">终端管理</a></li></ul>
 			</ul>
 		</div>
 		<div data-options="region:'center'">
@@ -19,7 +19,7 @@
 		<jscript>
 		<script type="text/javascript">
 		$(function() {
-		    openTab('${title}', '${ctx}/manager/${controller}/list', false);
+		    openTab('终端管理', '${ctx}/manager/terminal/list', false);
 		});
 		</script>
 		</jscript>

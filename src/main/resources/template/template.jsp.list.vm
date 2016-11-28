@@ -28,7 +28,7 @@
     <form id="searchForm" method="post">
     <table>
         <tr>
-        	${searchs}
+        	${searchInputs}
             <td class="td-right">创建时间：</td>
             <td>
             <input class="easyui-datebox" type="text" id="createDateBegin" style="width:100px;">~
@@ -62,18 +62,8 @@
                 style="width:330px;height:160px;padding:10px;">
         <form id="editForm" method="post">
         <input type="hidden" name="id" id="dataId">
-        <input type="hidden" name="parentId" id="parentId" value="${param.parentId}">
         <table class="table">
-            <tr>
-                <td align="right">${title}名称：</td>
-                <td>
-                <input class="easyui-validatebox" type="text" name="name" id="nameEdit" style="width:150px;" data-options="required:true"></td>
-            </tr>
-            <tr>
-                <td align="right">${title}编码：</td>
-                <td>
-                <input class="easyui-validatebox" type="text" name="code" id="codeEdit" style="width:150px;" data-options="required:true"></td>
-            </tr>
+            ${edits}
             <tr>
                 <td></td>
                 <td><a class="easyui-linkbutton" id="saveBtn" href="#" data-options="iconCls:'icon-save'">保存</a></td>
@@ -97,8 +87,7 @@
         <table id="dgBatch" style="width:100%;">
             <thead>
                 <tr>
-                    <th data-options="field:'name',width:100,editor:{type:'text'}">${title}名称</th>
-                    <th data-options="field:'code',width:100,editor:{type:'text'}">${title}编码</th>
+                    ${batchColumns}
                 </tr>
             </thead>
         </table>
@@ -112,7 +101,7 @@
     <script type="text/javascript">
     $(function() {
         $('#datagrid').datagrid({
-            url: '${ctx}/manager/${className}/query',
+            url: '${ctx}/manager/${controller}/query',
             toolbar: '#tools',
             idField: "id",
             autoRowHeight: true,
@@ -137,25 +126,28 @@
             ]]
         });
         
+        /*
         $('#dgBatch').datagrid({
             toolbar: '#tb',
-            onClickRow: onClickRow
-        });
+            onClickRow: onClickBatchRow
+        });*/
         
         $('#searchBtn').click(function() {
             $('#datagrid').datagrid('load', {
+                ${searchParams}
                 createDateBegin: $('#createDateBegin').datebox('getValue'),
                 createDateEnd: $('#createDateEnd').datebox('getValue')
             });
         });
         
+        /*
         $('#addBtn').click(function() {
-            $("#editWin").window({title:"新增${title}"}).window("open").window("center");
+            $("#editWin").window({title:"新增"}).window("open").window("center");
         });
         
         $('#addBatchBtn').click(function() {
             append();
-            $("#editBatchWin").window({title:"新增${title}-批量"}).window("open").window("center");
+            $("#editBatchWin").window({title:"批量新增"}).window("open").window("center");
         });
         
         $('#deleteBtn').click(function() {
@@ -171,7 +163,7 @@
                     fn: function(r){
                         if (r){
                             $.messager.progress();
-                            var url = "${ctx}/manager/organization/deleteBatch"
+                            var url = "${ctx}/manager/${controller}/deleteBatch"
                             var params = {
                                 ids: getRowIds(rows)    
                             };
@@ -179,7 +171,6 @@
                                 $.messager.progress('close');
                                 if (result.status) {
                                     $.messager.alert('消息', '删除成功', 'info');  
-                                    window.parent.trees();
                                     $('#datagrid').datagrid('reload');
                                 } else {
                                     $.messager.alert('消息', result.message, 'error');
@@ -189,15 +180,16 @@
                     }
                 });
             }
-        });
+        });*/
         
+        /*
         $('#saveBtn').click(function() {
             $.messager.progress();
             $('#editForm').submit();
         });
         
         $('#editForm').form({
-            url: '${ctx}/manager/organization/saveOrUpdate',
+            url: '${ctx}/manager/${controller}/saveOrUpdate',
             onSubmit: function() {
                 var isValid = $(this).form('validate');
                 if (!isValid) {$.messager.progress('close');}
@@ -209,7 +201,6 @@
                 if (result.status) {
                     $.messager.alert('消息', '保存成功', 'info', function(r) {
                         $('#editWin').window('close');
-                        window.parent.trees();
                         $('#datagrid').datagrid('reload');
                         $('#editForm').form('reset');
                     });
@@ -217,19 +208,18 @@
                     $.messager.alert('消息', result.message, 'error');
                 }
             }
-        });
+        });*/
     });
     function updateById(id) {
         $.messager.progress();
-        var url = "${ctx}/manager/organization/getById"
+        var url = "${ctx}/manager/${controller}/getById"
         var params = {id: id};
         $.post(url, params, function(result) {
             $.messager.progress('close');
             if (result.status) {
                 $('#dataId').val(result.data.id);
-                $('#nameEdit').val(result.data.name);
-                $('#codeEdit').val(result.data.code);
-                $("#editWin").window({title:"修改${title}"}).window("open").window("center");
+                ${updates}
+                $("#editWin").window({title:"修改"}).window("open").window("center");
             } else {
                 $.messager.alert('消息', result.message, 'error');
             }
@@ -263,7 +253,7 @@
                 .datagrid('deleteRow', editIndex);
         editIndex = undefined;
     }
-    function onClickRow(index){
+    function onClickBatchRow(index){
         if (editIndex != index){
             if (endEditing()){
                 $('#dgBatch').datagrid('selectRow', index)
@@ -280,18 +270,15 @@
             if (rows.length) {
                 var inserted = $('#dgBatch').datagrid('getChanges', "inserted");
                 if (inserted.length) {
-                    var $(form) = $('#editBatchForm');
-                    $(form).children().remove();
+                    var form = $('#editBatchForm');
+                    form.children().remove();
                     for (var i=0; i<inserted.length; i++) {
-                        $(form).append('<input type="hidden" name="name" value="' + inserted[i].name + '">');
-                        $(form).append('<input type="hidden" name="code" value="' + inserted[i].code + '">');
+                        ${batchInputs}
                     }
-                    $(form).append('<input type="hidden" name="parentId" value="${param.parentId}">');
-                    var url = "${ctx}/manager/organization/saveBatch"
+                    var url = "${ctx}/manager/${controller}/saveBatch"
                     $.post(url, $form.serialize(), function(result) {
                         if (result.status) {
                             $('#editBatchWin').window('close');
-                            window.parent.trees();
                             $('#datagrid').datagrid('reload');
                         } else {
                             $.messager.alert({

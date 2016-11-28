@@ -249,7 +249,7 @@ public class Coding {
 			
 			//新增验证
 			StringBuilder saveValidates = new StringBuilder("");
-			String saveValidate = props.getProperty(tagName + ".save.entity.validate");
+			String saveValidate = props.getProperty(tagName + ".save.validate.entity");
 			if (!StringUtils.isEmpty(saveValidate)) {
 				if (saveValidate.contains(",")) {
 					String[] datas = saveValidate.split("[,]");
@@ -264,7 +264,7 @@ public class Coding {
 			
 			//修改验证
 			StringBuilder updateValidates = new StringBuilder("");
-			String updateValidate = props.getProperty(tagName + ".update.entity.validate");
+			String updateValidate = props.getProperty(tagName + ".update.validate.entity");
 			if (!StringUtils.isEmpty(updateValidate)) {
 				if (updateValidate.contains(",")) {
 					String[] datas = updateValidate.split("[,]");
@@ -358,7 +358,7 @@ public class Coding {
 		String className = props.getProperty("class.name");
 		String jspName = lowerName(className);
 		context.put("title", props.getProperty("jsp.title"));
-		context.put("className", jspName);
+		context.put("controller", jspName);
 		
 		StringWriter writer = new StringWriter();
 		template.merge(context, writer);
@@ -373,60 +373,147 @@ public class Coding {
 		String jspName = lowerName(className);
 		context.put("title", props.getProperty("jsp.title"));
 		context.put("searchFlag", props.getProperty("jsp.search.flag"));
-		context.put("className", jspName);
+		context.put("controller", jspName);
 		
-		StringBuilder searchs = new StringBuilder("");
-		String search = props.getProperty("jsp.search.element.param");
+		StringBuilder searchInputs = new StringBuilder("");
+		StringBuilder searchParams = new StringBuilder("");
+		String search = props.getProperty("jsp.search.param");
 		if (!StringUtils.isEmpty(search)) {
 			if (search.contains(",")) {
 				String[] names = search.split("[,]");
-			} else {
-				StringBuilder attributes = new StringBuilder("<td>");
-				String[] param = search.split("[:]");
-				if (param[0].contains("-")) {
-					String[] params = param[0].split("[-]");
-					for (int i = 0; i < params.length; i++) {
-						String attributeData = props
-								.getProperty("param.attribute" + params[i]);
-						String[] attributeNames = attributeData.split("[,]");
-						attributes
-								.append("<input type=\"text\" class=\"easyui-datebox\" id=\"")
-								.append(attributeNames[0])
-								.append("\" style=\"width:100px;\">");
-						if (i == 0) attributes.append("~\n");
-					}
-				} else {
-					String attributeData = props.getProperty("param.attribute"
-							+ param[0]);
-					String[] attributeNames = attributeData.split("[,]");
-					attributes.append("<input type=\"text\" id=\"")
-							.append(attributeNames[0])
-							.append("\" style=\"width:150px;\">");
+				for (String name : names) {
+					searchs(searchInputs, searchParams, name);
 				}
-				attributes.append("</td>\n");
-				searchs.append("<td class=\"td-right\">").append(param[1]).append("：</td>\n")
-						.append(attributes.toString());
+			} else {
+				searchs(searchInputs, searchParams, search);
 			}
 		}
-		context.put("searchs", searchs);
+		context.put("searchInputs", searchInputs);
+		context.put("searchParams", searchParams);
 		
 		StringBuilder columns = new StringBuilder("");
-		String column = props.getProperty("jsp.datagrid.columns.entity");
+		String column = props.getProperty("jsp.column.entity");
 		if (!StringUtils.isEmpty(column)) {
 			if (column.contains(",")) {
 				String[] names = column.split("[,]");
+				for (String name : names) {
+					columns(columns, name);
+				}
 			} else {
-				String attributeData = props.getProperty("entity.attribute"
-						+ column);
-				String[] attributeNames = attributeData.split("[,]");
-				columns.append("{field: '").append(attributeNames[0]).append("', title: '").append(attributeNames[3]).append("'},\n");
+				columns(columns, column);
 			}
 		}
 		context.put("columns", columns);
 		
+		StringBuilder edits = new StringBuilder("");
+		String edit = props.getProperty("jsp.edit.entity");
+		if (!StringUtils.isEmpty(edit)) {
+			if (edit.contains(",")) {
+				String[] names = edit.split("[,]");
+				for (String name : names) {
+					edits(edits, name);
+				}
+			} else {
+				edits(edits, edit);
+			}
+		}
+		context.put("edits", edits);
+		
+		StringBuilder batchColumns = new StringBuilder("");
+		StringBuilder batchInputs = new StringBuilder("");
+		String batchColumn = props.getProperty("jsp.batch.column.data");
+		if (!StringUtils.isEmpty(batchColumn)) {
+			if (batchColumn.contains(",")) {
+				String[] names = batchColumn.split("[,]");
+				for (String name : names) {
+					batchColumns(batchColumns, batchInputs, name);
+				}
+			} else {
+				batchColumns(batchColumns, batchInputs, batchColumn);
+			}
+		}
+		context.put("batchColumns", batchColumns);
+		context.put("batchInputs", batchInputs);
+		
+		StringBuilder updates = new StringBuilder("");
+		String update = props.getProperty("jsp.update.entity");
+		if (!StringUtils.isEmpty(update)) {
+			if (update.contains(",")) {
+				String[] names = update.split("[,]");
+				for (String name : names) {
+					updates(updates, name);
+				}
+			} else {
+				updates(updates, update);
+			}
+		}
+		context.put("updates", updates);
+		
 		StringWriter writer = new StringWriter();
 		template.merge(context, writer);
 		writeJavaFile(props.getProperty("jsp.path") + jspName + "List.jsp", writer.toString());
+	}
+
+	private static void updates(StringBuilder updates, String index) {
+		String attributeData = props.getProperty("entity.attribute" + index);
+		String[] attributeNames = attributeData.split("[,]");
+		updates.append("$('#").append(attributeNames[0]).append("Edit').val(result.data.").append(attributeNames[0])
+				.append(");\n");
+	}
+
+	private static void batchColumns(StringBuilder batchColumns, StringBuilder batchInputs, String index) {
+		String attributeData = props.getProperty("data.attribute" + index);
+		String[] attributeNames = attributeData.split("[,]");
+		batchColumns.append("<th data-options=\"field:'").append(attributeNames[0]).append("',editor:{type:'text'}\">")
+				.append(attributeNames[2]).append("</th>\n");
+		batchInputs.append("form.append('<input type=\"hidden\" name=\"").append(attributeNames[0])
+				.append("\" value=\"' + inserted[i].").append(attributeNames[0]).append(" + '\">');\n");
+	}
+
+	private static void columns(StringBuilder columns, String index) {
+		String attributeData = props.getProperty("entity.attribute" + index);
+		String[] attributeNames = attributeData.split("[,]");
+		columns.append("{field: '").append(attributeNames[0]).append("', title: '").append(attributeNames[3])
+				.append("'},\n");
+	}
+
+	private static void edits(StringBuilder edits, String index) {
+		String attributeData = props.getProperty("entity.attribute"
+				+ index);
+		String[] attributeNames = attributeData.split("[,]");
+		edits.append("<tr>\n");
+		edits.append("<td align=\"right\">").append(attributeNames[3]).append("：</td>\n");
+		edits.append("<td>\n<input class=\"easyui-validatebox\" type=\"text\" name=\"")
+				.append(attributeNames[0]).append("\" id=\"").append(attributeNames[0]).append("Edit")
+				.append("\" style=\"width:150px;\" data-options=\"required:true\"></td>\n");
+		edits.append("</tr>\n");
+	}
+
+	private static void searchs(StringBuilder searchInputs, StringBuilder searchParams, String search) {
+		StringBuilder inputs = new StringBuilder("<td>");
+		String[] searchs = search.split("[:]");
+		if (searchs[0].contains("-")) {
+			String[] param = searchs[0].split("[-]");
+			for (int i = 0; i < param.length; i++) {
+				String attributeData = props.getProperty("param.attribute" + param[i]);
+				String[] attributeNames = attributeData.split("[,]");
+				inputs.append("<input type=\"text\" class=\"easyui-datebox\" id=\"").append(attributeNames[0])
+						.append("Search\" style=\"width:100px;\">");
+				if (i == 0)
+					inputs.append("~\n");
+				searchParams.append(attributeNames[0]).append(": $('#").append(attributeNames[0])
+						.append("Search').val(),\n");
+			}
+		} else {
+			String attributeData = props.getProperty("param.attribute" + searchs[0]);
+			String[] attributeNames = attributeData.split("[,]");
+			inputs.append("<input type=\"text\" id=\"").append(attributeNames[0])
+					.append("Search\" style=\"width:150px;\">");
+			searchParams.append(attributeNames[0]).append(": $('#").append(attributeNames[0])
+					.append("Search').val(),\n");
+		}
+		inputs.append("</td>\n");
+		searchInputs.append("<td class=\"td-right\">").append(searchs[1]).append("：</td>\n").append(inputs.toString());
 	}
 
 	private static void writeJavaFile(String name, String content) {
