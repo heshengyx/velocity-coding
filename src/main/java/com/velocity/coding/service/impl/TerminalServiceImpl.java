@@ -33,9 +33,10 @@ public class TerminalServiceImpl implements ITerminalService {
     @Override
     public void save(Terminal terminal) {
         String name = terminal.getName();
-        if (StringUtils.isEmpty(name)) {
-            throw new DataAccessResourceFailureException("名称不能为空");
-        }
+if (StringUtils.isEmpty(name)) {
+throw new DataAccessResourceFailureException("姓名不能为空");
+}
+
         terminal.setId(UUIDGeneratorUtil.getUUID());
         terminal.setCreateTime(new Date());
         
@@ -83,10 +84,11 @@ public class TerminalServiceImpl implements ITerminalService {
     
     @Override
     public void update(Terminal terminal) {
-        String name = terminal.getName();
-        if (StringUtils.isEmpty(name)) {
-            throw new DataAccessResourceFailureException("名称不能为空");
-        }
+        Date birthDate = terminal.getBirthDate();
+if (null != birthDate) {
+throw new DataAccessResourceFailureException("出生日期不能为空");
+}
+
         terminal.setUpdateTime(new Date());
         int count = terminalDao.update(terminal);
         if (count == 0) {

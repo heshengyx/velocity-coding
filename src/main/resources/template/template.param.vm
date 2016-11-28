@@ -10,6 +10,20 @@ public class ${Entity}QueryParam extends QueryParam implements Serializable {
      */
     private static final long serialVersionUID = 1L;
     ${attributes}
+    private String createDateBegin;
+	private String createDateEnd;
     
     ${methods}
+    public String getCreateDateBegin() {
+		return createDateBegin;
+	}
+	public void setCreateDateBegin(String createDateBegin) {
+		this.createDateBegin = createDateBegin;
+	}
+	public String getCreateDateEnd() {
+		return createDateEnd;
+	}
+	public void setCreateDateEnd(String createDateEnd) {
+		this.createDateEnd = createDateEnd;
+	}
 }

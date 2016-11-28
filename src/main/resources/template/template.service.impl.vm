@@ -32,10 +32,7 @@ public class ${Entity}ServiceImpl implements I${Entity}Service {
     
     @Override
     public void save(${Entity} ${entity}) {
-        String name = ${entity}.getName();
-        if (StringUtils.isEmpty(name)) {
-            throw new DataAccessResourceFailureException("名称不能为空");
-        }
+        ${saveValidates}
         ${entity}.setId(UUIDGeneratorUtil.getUUID());
         ${entity}.setCreateTime(new Date());
         
@@ -83,10 +80,7 @@ public class ${Entity}ServiceImpl implements I${Entity}Service {
     
     @Override
     public void update(${Entity} ${entity}) {
-        String name = ${entity}.getName();
-        if (StringUtils.isEmpty(name)) {
-            throw new DataAccessResourceFailureException("名称不能为空");
-        }
+        ${updateValidates}
         ${entity}.setUpdateTime(new Date());
         int count = ${entity}Dao.update(${entity});
         if (count == 0) {

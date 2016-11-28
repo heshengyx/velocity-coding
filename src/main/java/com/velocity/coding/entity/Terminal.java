@@ -16,6 +16,7 @@ public class Terminal extends BaseEntity implements Serializable {
      */
     private static final long serialVersionUID = 1L;
 	private String name;
+	private Date birthDate;
 
 	
 	public void setName(String name) {
@@ -23,6 +24,12 @@ public class Terminal extends BaseEntity implements Serializable {
 	}
 	public String getName() {
 		return name;
+	}
+	public void setBirthDate(Date birthDate) {
+		this.birthDate = birthDate;
+	}
+	public Date getBirthDate() {
+		return birthDate;
 	}
 
 }

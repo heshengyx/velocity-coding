@@ -27,6 +27,10 @@
     <form id="searchForm" method="post">
     <table>
         <tr>
+        	<td>出生日期：</td>
+<td><input type="text" class="easyui-datebox" id="birthBeginDate" style="width:100px;">~
+<input type="text" class="easyui-datebox" id="birthEndDate" style="width:100px;"></td>
+
             <td class="td-right">创建时间：</td>
             <td>
             <input class="easyui-datebox" type="text" id="createDateBegin" style="width:100px;">~
@@ -109,10 +113,9 @@
     <script type="text/javascript">
     $(function() {
         $('#datagrid').datagrid({
-            url: '${ctx}/manager/organization/query',
+            url: '${ctx}/manager/terminal/query',
             toolbar: '#tools',
             idField: "id",
-            queryParams: {parentId: $('#parentId').val()},
             autoRowHeight: true,
             fitColumns: true,
             showFooter: true,
@@ -125,8 +128,8 @@
             checkOnSelect: true,
             columns: [[
                 {field: 'id', title: '选择', width: 30, checkbox: true},
-                {field: 'name', title: '终端管理名称', width: 300},
-                {field: 'code', title: '终端管理编码'},
+                {field: 'name', title: '姓名'},
+
                 {field: 'createTime', title: '创建时间', formatter:function(val, row, idx) {
                     return to_date_hms(val);
                 }},
@@ -143,9 +146,6 @@
         
         $('#searchBtn').click(function() {
             $('#datagrid').datagrid('load', {
-                name: $('#name').val(),
-                code: $('#code').val(),
-                parentId: $('#parentId').val(),
                 createDateBegin: $('#createDateBegin').datebox('getValue'),
                 createDateEnd: $('#createDateEnd').datebox('getValue')
             });

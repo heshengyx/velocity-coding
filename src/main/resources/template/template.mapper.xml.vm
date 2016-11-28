@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="${package}.mapper.I${Entity}Mapper">
+	<resultMap type="${package}.entity.${Entity}" id="${entity}">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		${results}
+		<result column="ACTIVE" property="active" jdbcType="INTEGER" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="UPDATE_BY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="REMARKS" property="remarks" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="sqlQuery">
+		FROM ${table} a where 1=1
+		${conditions}
+		<if test="param.createDateBegin != null and param.createDateBegin != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[>=]]> #{param.createDateBegin}
+        </if>
+        <if test="param.createDateEnd != null and param.createDateEnd != ''">
+            AND to_char(a.CREATE_TIME, 'YYYY-MM-DD') <![CDATA[<=]]> #{param.createDateEnd}
+        </if>
+	</sql>
+	
+	<!-- 根据ID查找 -->
+	<select id="getById" resultMap="${entity}">
+    	SELECT * FROM ${table} WHERE ID = #{id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<!-- 多条件查找 -->
+  	<select id="getData" resultMap="${entity}">
+    	SELECT * FROM ${table} WHERE ID = #{param.id, jdbcType=VARCHAR}
+  	</select>
+  	
+  	<select id="count" resultType="java.lang.Integer">
+		SELECT COUNT(1) <include refid="sqlQuery"/>
+	</select>
+	<select id="query" resultMap="${entity}">
+		SELECT a.* <include refid="sqlQuery"/>
+			order by a.CREATE_TIME desc limit #{start, jdbcType=INTEGER}, #{end, jdbcType=INTEGER}
+	</select>
+	<select id="queryAll" resultMap="${entity}">
+		SELECT a.* FROM ${table} a
+			order by a.CREATE_TIME desc
+	</select>
+  	
+  	<!-- 新增 -->
+  	<insert id="save" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO ${table}
+		  (ID,
+		   ${columns}
+		   VERSION,
+		   CREATE_TIME,
+		   CREATE_BY,
+		   REMARKS)
+		VALUES
+		  (#{param.id, jdbcType=VARCHAR},
+		   ${values}
+		   #{param.version, jdbcType=INTEGER},
+		   #{param.createTime, jdbcType=TIMESTAMP},
+		   #{param.createBy, jdbcType=VARCHAR},
+		   #{param.remarks, jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 批量新增 -->
+	<insert id="saveBatch">
+		INSERT INTO ${table}
+		  (ID,
+		   ${columns}
+		   VERSION,
+		   CREATE_TIME,
+		   CREATE_BY,
+		   REMARKS)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator="," >
+		  (#{item.id, jdbcType=VARCHAR},
+		   ${values}
+		   #{item.version, jdbcType=INTEGER},
+		   #{item.createTime, jdbcType=TIMESTAMP},
+		   #{item.createBy, jdbcType=VARCHAR},
+		   #{item.remarks, jdbcType=VARCHAR})
+		</foreach>  
+	</insert>
+	
+	<update id="update">
+		UPDATE ${table} a
+		<set>
+		${sets}
+		a.UPDATE_TIME = #{param.updateTime, jdbcType=TIMESTAMP},
+		a.UPDATE_BY = #{param.updateBy, jdbcType=VARCHAR}
+		</set>
+		WHERE a.ID = #{param.id, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 根据ID删除-->
+	<delete id="deleteById">
+		delete from ${table} a where a.ID = #{id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 多条件删除 -->
+	<delete id="delete">
+		delete from ${table} a where a.ID = #{param.id, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 根据ID批量删除-->
+	<delete id="deleteByIds">
+		delete from ${table} a where a.ID in (
+		<foreach collection="ids" item="id" index="index" separator="," >
+		  #{id, jdbcType=VARCHAR}
+		</foreach>)
+	</delete>
+</mapper>

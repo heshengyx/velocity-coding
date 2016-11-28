@@ -12,6 +12,8 @@ import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.util.StringUtils;
 
+import com.velocity.coding.enums.JdbcTypeEnum;
+
 public class Coding {
 
 	private static VelocityEngine ve;
@@ -44,7 +46,122 @@ public class Coding {
 		createTemplateByTag("Dao.Impl", "");
 		createTemplateByTag("Mapper", "I");
 		createTemplateByTag("Controller", "");
-		createTemplateJSP();
+		createTemplateMapperXml();
+		createTemplateJsp();
+		createTemplateJspList();
+	}
+
+	private static void createTemplateMapperXml() {
+		boolean flag = Boolean.valueOf(props.getProperty("mapper.xml.flag"));
+		if (flag) {
+			template = ve.getTemplate("template/template.mapper.xml.vm", encoding);
+			VelocityContext context = new VelocityContext();
+			
+			context.put("package", props.getProperty("package.name"));
+			String className = props.getProperty("class.name");
+			context.put("Entity", className);
+			context.put("entity", lowerName(className));
+			context.put("table", props.getProperty("table.name").toUpperCase());
+			
+			StringBuilder results = new StringBuilder("");
+			StringBuilder conditions = new StringBuilder("");
+			StringBuilder columns = new StringBuilder("");
+			StringBuilder values = new StringBuilder("");
+			StringBuilder sets = new StringBuilder("");
+			
+			int attributeNum = Integer.parseInt(props.getProperty("entity.attributes"));
+			for (int i = 1; i <= attributeNum; i++) {
+				String attribute = props.getProperty("entity.attribute" + i);
+				String[] attributeNames = attribute.split("[,]");
+				String column = "";
+				if (attributeNames.length > 2) {
+					column = attributeNames[2];
+				} else {
+					column = attributeNames[0];
+				}
+				
+				results.append("<result column=\"")
+						.append(column.toUpperCase()).append("\" property=\"")
+						.append(attributeNames[0]).append("\" jdbcType=\"")
+						.append(JdbcTypeEnum.getJdbcType(attributeNames[1]))
+						.append("\" />\n");
+
+				columns.append(column.toUpperCase()).append(",\n");
+				
+				values.append("#{param.").append(attributeNames[0])
+						.append(", jdbcType=")
+						.append(JdbcTypeEnum.getJdbcType(attributeNames[1]))
+						.append("},\n");
+				
+				sets.append("<if test=\"param.").append(attributeNames[0])
+						.append(" != null and param.")
+						.append(attributeNames[0]).append(" != ''\">\n")
+						.append(" a.").append(column.toUpperCase())
+						.append(" = #{param.").append(attributeNames[0])
+						.append(", jdbcType=")
+						.append(JdbcTypeEnum.getJdbcType(attributeNames[1]))
+						.append("},\n").append("</if>\n");
+			}
+			
+			attributeNum = Integer.parseInt(props.getProperty("param.attributes"));
+			for (int i = 1; i <= attributeNum; i++) {
+				String attribute = props.getProperty("param.attribute" + i);
+				String[] attributeNames = attribute.split("[,]");
+				if (Integer.parseInt(attributeNames[3]) != 0) {
+					conditions.append("<if test=\"param.")
+							.append(attributeNames[0])
+							.append(" != null and param.")
+							.append(attributeNames[0]).append(" != ''\">\n");
+					switch (Integer.parseInt(attributeNames[3])) {
+					case 1:
+						//字符串=
+						conditions.append(" AND a.")
+								.append(attributeNames[2].toUpperCase())
+								.append(" = #{param.")
+								.append(attributeNames[0]).append("}\n")
+								.append("</if>\n");
+						break;
+					case 2:
+						//日期(yyyy-MM-dd)=
+						conditions.append(" AND to_char(a.")
+								.append(attributeNames[2].toUpperCase())
+								.append(", 'YYYY-MM-DD') = #{param.")
+								.append(attributeNames[0]).append("}\n")
+								.append("</if>\n");
+						break;
+					case 3:
+						//日期(yyyy-MM-dd)>=
+						conditions.append(" AND to_char(a.")
+								.append(attributeNames[2].toUpperCase())
+								.append(", 'YYYY-MM-DD') <![CDATA[>=]]> #{param.")
+								.append(attributeNames[0]).append("}\n")
+								.append("</if>\n");
+						break;
+					case 4:
+						//日期(yyyy-MM-dd)<=
+						conditions
+								.append(" AND to_char(a.")
+								.append(attributeNames[2].toUpperCase())
+								.append(", 'YYYY-MM-DD') <![CDATA[<=]]> #{param.")
+								.append(attributeNames[0]).append("}\n")
+								.append("</if>\n");
+						break;
+					default:
+						break;
+					}
+				}
+			}
+			
+			context.put("results", results.toString());
+			context.put("conditions", conditions.toString());
+			context.put("columns", columns.toString());
+			context.put("values", values.toString());
+			context.put("sets", sets.toString());
+			
+			StringWriter writer = new StringWriter();
+			template.merge(context, writer);
+			writeJavaFile(props.getProperty("mapper.xml.path") + className + "Mapper.xml", writer.toString());
+		}
 	}
 
 	private static void createTemplate(String tag, String suffix) {
@@ -110,37 +227,55 @@ public class Coding {
 			context.put("Entity", className);
 			context.put("entity", lowerName(className));
 			
-			//批量
+			//批量新增
 			StringBuilder attributes = new StringBuilder("");
 			StringBuilder methods = new StringBuilder("");
 			String attribute = "";
-			String data = props.getProperty(tagName + ".param.data");
+			String data = props.getProperty(tagName + ".savebatch.data");
 			if (!StringUtils.isEmpty(data)) {
 				if (data.contains(",")) {
 					String[] datas = data.split("[,]");
 					for (int i = 0; i < datas.length; i++) {
-						String _data = datas[i];
-						String attributeData = props.getProperty("data.attribute" + _data);
-						String[] attributeNames = attributeData.split("[,]");
-						attributes.append(attributeNames[1]).append(" ").append(attributeNames[0]).append("s").append(" = ")
-								.append("data.").append(getMethodName(attributeNames[0])).append("();\n");
-						methods.append(lowerName(className)).append(".").append(setMethodName(attributeNames[0]))
-								.append("(").append(attributeNames[0]).append("s[i]);\n");
-						if (i == 0) attribute = attributeNames[0] + "s";
+						String attributeData = batchAdd(attributes, methods, datas[i], lowerName(className));
+						if (i == 0) attribute = attributeData + "s";
 					}
 				} else {
-					String attributeData = props.getProperty("data.attribute" + data);
-					String[] attributeNames = attributeData.split("[,]");
-					attributes.append(attributeNames[1]).append(" ").append(attributeNames[0]).append("s").append(" = ")
-							.append("data.").append(getMethodName(attributeNames[0])).append("();\n");
-					methods.append(lowerName(className)).append(".").append(setMethodName(attributeNames[0]))
-							.append("(").append(attributeNames[0]).append("s[i]);\n");
-					attribute = attributeNames[0] + "s";
+					attribute = batchAdd(attributes, methods, data, lowerName(className));
 				}
 			}
 			context.put("attributes", attributes);
 			context.put("methods", methods);
 			context.put("attribute", attribute);
+			
+			//新增验证
+			StringBuilder saveValidates = new StringBuilder("");
+			String saveValidate = props.getProperty(tagName + ".save.entity.validate");
+			if (!StringUtils.isEmpty(saveValidate)) {
+				if (saveValidate.contains(",")) {
+					String[] datas = saveValidate.split("[,]");
+					for (int i = 0; i < datas.length; i++) {
+						validates(saveValidates, datas[i], lowerName(className));
+					}
+				} else {
+					validates(saveValidates, saveValidate, lowerName(className));
+				}
+			}
+			context.put("saveValidates", saveValidates);
+			
+			//修改验证
+			StringBuilder updateValidates = new StringBuilder("");
+			String updateValidate = props.getProperty(tagName + ".update.entity.validate");
+			if (!StringUtils.isEmpty(updateValidate)) {
+				if (updateValidate.contains(",")) {
+					String[] datas = updateValidate.split("[,]");
+					for (int i = 0; i < datas.length; i++) {
+						validates(updateValidates, datas[i], lowerName(className));
+					}
+				} else {
+					validates(updateValidates, updateValidate, lowerName(className));
+				}
+			}
+			context.put("updateValidates", updateValidates);
 			
 			StringWriter writer = new StringWriter();
 			template.merge(context, writer);
@@ -157,14 +292,137 @@ public class Coding {
 		}
 	}
 
-	private static void createTemplateJSP() {
+	/**
+	 * 批量新增
+	 * @param attributes
+	 * @param methods
+	 * @param data
+	 * @param lowerName
+	 */
+	private static String batchAdd(StringBuilder attributes,
+			StringBuilder methods, String data, String className) {
+		String attributeData = props.getProperty("data.attribute" + data);
+		String[] attributeNames = attributeData.split("[,]");
+		attributes.append(attributeNames[1]).append(" ")
+				.append(attributeNames[0]).append("s").append(" = ")
+				.append("data.").append(getMethodName(attributeNames[0]))
+				.append("();\n");
+		methods.append(lowerName(className)).append(".")
+				.append(setMethodName(attributeNames[0])).append("(")
+				.append(attributeNames[0]).append("s[i]);\n");
+		return attributeNames[0] + "s";
+	}
+
+	/**
+	 * 设置验证
+	 * @param validates
+	 * @param validate
+	 * @param className
+	 */
+	private static void validates(StringBuilder validates,
+			String validate, String className) {
+		String attributeData = props.getProperty("entity.attribute" + validate);
+		String[] attributeNames = attributeData.split("[,]");
+		validates.append(attributeNames[1]).append(" ")
+				.append(attributeNames[0]).append(" = ")
+				.append(className).append(".")
+				.append(getMethodName(attributeNames[0]))
+				.append("();\n");
+		JdbcTypeEnum key = JdbcTypeEnum.valueOf(attributeNames[1].toUpperCase());
+		switch (key) {
+		case STRING:
+			validates
+					.append("if (StringUtils.isEmpty(")
+					.append(attributeNames[0])
+					.append(")) {\n")
+					.append("throw new DataAccessResourceFailureException(\"")
+					.append(attributeNames[3])
+					.append("不能为空\");\n}\n");
+			break;
+		default:
+			validates
+					.append("if (null != ")
+					.append(attributeNames[0])
+					.append(") {\n")
+					.append("throw new DataAccessResourceFailureException(\"")
+					.append(attributeNames[3])
+					.append("不能为空\");\n}\n");
+			break;
+		}
+	}
+	
+	private static void createTemplateJsp() {
+		template = ve.getTemplate("template/template.jsp.vm", encoding);
+		VelocityContext context = new VelocityContext();
+		
+		String className = props.getProperty("class.name");
+		String jspName = lowerName(className);
+		context.put("title", props.getProperty("jsp.title"));
+		context.put("className", jspName);
+		
+		StringWriter writer = new StringWriter();
+		template.merge(context, writer);
+		writeJavaFile(props.getProperty("jsp.path") + jspName + ".jsp", writer.toString());
+	}
+
+	private static void createTemplateJspList() {
 		template = ve.getTemplate("template/template.jsp.list.vm", encoding);
 		VelocityContext context = new VelocityContext();
 		
 		String className = props.getProperty("class.name");
 		String jspName = lowerName(className);
 		context.put("title", props.getProperty("jsp.title"));
-		context.put("searchFlag", true);
+		context.put("searchFlag", props.getProperty("jsp.search.flag"));
+		context.put("className", jspName);
+		
+		StringBuilder searchs = new StringBuilder("");
+		String search = props.getProperty("jsp.search.element.param");
+		if (!StringUtils.isEmpty(search)) {
+			if (search.contains(",")) {
+				String[] names = search.split("[,]");
+			} else {
+				StringBuilder attributes = new StringBuilder("<td>");
+				String[] param = search.split("[:]");
+				if (param[0].contains("-")) {
+					String[] params = param[0].split("[-]");
+					for (int i = 0; i < params.length; i++) {
+						String attributeData = props
+								.getProperty("param.attribute" + params[i]);
+						String[] attributeNames = attributeData.split("[,]");
+						attributes
+								.append("<input type=\"text\" class=\"easyui-datebox\" id=\"")
+								.append(attributeNames[0])
+								.append("\" style=\"width:100px;\">");
+						if (i == 0) attributes.append("~\n");
+					}
+				} else {
+					String attributeData = props.getProperty("param.attribute"
+							+ param[0]);
+					String[] attributeNames = attributeData.split("[,]");
+					attributes.append("<input type=\"text\" id=\"")
+							.append(attributeNames[0])
+							.append("\" style=\"width:150px;\">");
+				}
+				attributes.append("</td>\n");
+				searchs.append("<td class=\"td-right\">").append(param[1]).append("：</td>\n")
+						.append(attributes.toString());
+			}
+		}
+		context.put("searchs", searchs);
+		
+		StringBuilder columns = new StringBuilder("");
+		String column = props.getProperty("jsp.datagrid.columns.entity");
+		if (!StringUtils.isEmpty(column)) {
+			if (column.contains(",")) {
+				String[] names = column.split("[,]");
+			} else {
+				String attributeData = props.getProperty("entity.attribute"
+						+ column);
+				String[] attributeNames = attributeData.split("[,]");
+				columns.append("{field: '").append(attributeNames[0]).append("', title: '").append(attributeNames[3]).append("'},\n");
+			}
+		}
+		context.put("columns", columns);
 		
 		StringWriter writer = new StringWriter();
 		template.merge(context, writer);
