@@ -4,20 +4,6 @@
 <html>
     <head>
         <title>${title}-数据收集平台</title>
-        <style type="text/css">
-        .tag-content {
-            font-size: 12px;
-            padding: 15px;
-        }
-        .td-right {
-            width: 80px;
-            text-align: right;
-        }
-        .td-center {
-            width: 80px;
-            text-align: center;
-        }
-        </style>
     </head>
     
     <body>
@@ -98,6 +84,8 @@
     <!-- content -->
     <jscript>
     <!-- js -->
+    <script type="text/javascript" src="${ctx}/js/format.js"></script>
+    <script type="text/javascript" src="${ctx}/js/common.js"></script>
     <script type="text/javascript">
     $(function() {
         $('#datagrid').datagrid({
@@ -126,12 +114,6 @@
             ]]
         });
         
-        /*
-        $('#dgBatch').datagrid({
-            toolbar: '#tb',
-            onClickRow: onClickBatchRow
-        });*/
-        
         $('#searchBtn').click(function() {
             $('#datagrid').datagrid('load', {
                 ${searchParams}
@@ -140,79 +122,12 @@
             });
         });
         
-        /*
-        $('#addBtn').click(function() {
-            $("#editWin").window({title:"新增"}).window("open").window("center");
-        });
-        
-        $('#addBatchBtn').click(function() {
-            append();
-            $("#editBatchWin").window({title:"批量新增"}).window("open").window("center");
-        });
-        
-        $('#deleteBtn').click(function() {
-            var rows = $('#datagrid').datagrid('getChecked');
-            if (!rows.length) {
-                $.messager.alert('消息', '请至少选择一条记录', 'error');
-            } else {
-                $.messager.confirm({
-                    title: '消息',
-                    ok: '确定',
-                    cancel: '取消',
-                    msg: '确定要删除吗?',
-                    fn: function(r){
-                        if (r){
-                            $.messager.progress();
-                            var url = "${ctx}/manager/${controller}/deleteBatch"
-                            var params = {
-                                ids: getRowIds(rows)    
-                            };
-                            $.post(url, params, function(result) {
-                                $.messager.progress('close');
-                                if (result.status) {
-                                    $.messager.alert('消息', '删除成功', 'info');  
-                                    $('#datagrid').datagrid('reload');
-                                } else {
-                                    $.messager.alert('消息', result.message, 'error');
-                                }
-                            }, 'json');
-                        }
-                    }
-                });
-            }
-        });*/
-        
-        /*
-        $('#saveBtn').click(function() {
-            $.messager.progress();
-            $('#editForm').submit();
-        });
-        
-        $('#editForm').form({
-            url: '${ctx}/manager/${controller}/saveOrUpdate',
-            onSubmit: function() {
-                var isValid = $(this).form('validate');
-                if (!isValid) {$.messager.progress('close');}
-                return isValid;
-            },
-            success: function(result) {
-                var result = $.parseJSON(result);
-                $.messager.progress('close');
-                if (result.status) {
-                    $.messager.alert('消息', '保存成功', 'info', function(r) {
-                        $('#editWin').window('close');
-                        $('#datagrid').datagrid('reload');
-                        $('#editForm').form('reset');
-                    });
-                } else {
-                    $.messager.alert('消息', result.message, 'error');
-                }
-            }
-        });*/
+        submitForm('${ctx}/manager/${controller}/saveOrUpdate');
+        deleteRow('${ctx}/manager/${controller}/deleteBatch');
     });
     function updateById(id) {
         $.messager.progress();
-        var url = "${ctx}/manager/${controller}/getById"
+        var url = "${ctx}/manager/${controller}/getById?random="+ Math.random();
         var params = {id: id};
         $.post(url, params, function(result) {
             $.messager.progress('close');
@@ -224,45 +139,6 @@
                 $.messager.alert('消息', result.message, 'error');
             }
         }, 'json');
-    }
-    var editIndex = undefined;
-    function endEditing() {
-        if (editIndex == undefined){return true}
-        if ($('#dgBatch').datagrid('validateRow', editIndex)) {
-            /* var ed = $('#dgBatch').datagrid('getEditor', {index:editIndex,field:'productid'});
-            var productname = $(ed.target).combobox('getText');
-            $('#dgBatch').datagrid('getRows')[editIndex]['productname'] = productname; */
-            $('#dgBatch').datagrid('endEdit', editIndex);
-            editIndex = undefined;
-            return true;
-        } else {
-            return false;
-        }
-    }
-    function append() {
-        if (endEditing()) {
-            $('#dgBatch').datagrid('appendRow', {});
-            editIndex = $('#dgBatch').datagrid('getRows').length-1;
-            $('#dgBatch').datagrid('selectRow', editIndex)
-                    .datagrid('beginEdit', editIndex);
-        }
-    }
-    function removeit() {
-        if (editIndex == undefined){return;}
-        $('#dgBatch').datagrid('cancelEdit', editIndex)
-                .datagrid('deleteRow', editIndex);
-        editIndex = undefined;
-    }
-    function onClickBatchRow(index){
-        if (editIndex != index){
-            if (endEditing()){
-                $('#dgBatch').datagrid('selectRow', index)
-                        .datagrid('beginEdit', index);
-                editIndex = index;
-            } else {
-                $('#dgBatch').datagrid('selectRow', editIndex);
-            }
-        }
     }
     function saveBatch() {
         if (endEditing()){
@@ -276,7 +152,7 @@
                         ${batchInputs}
                     }
                     var url = "${ctx}/manager/${controller}/saveBatch"
-                    $.post(url, $form.serialize(), function(result) {
+                    $.post(url, form.serialize(), function(result) {
                         if (result.status) {
                             $('#editBatchWin').window('close');
                             $('#datagrid').datagrid('reload');

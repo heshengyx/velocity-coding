@@ -1,0 +1,26 @@
+package ${package}.test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import ${package}.entity.${Entity};
+import ${package}.service.I${Entity}Service;
+
+public class ${Entity}JunitTest extends BaseJunitTest {
+
+	@Autowired
+	private I${Entity}Service ${entity}Service;
+	
+	@Test
+	public void testSaveBatch() {
+		List<${Entity}> ${entity}s = new ArrayList<${Entity}>();
+		for (int i = 10; i < 50; i++) {
+			${Entity} ${entity} = new ${Entity}();
+			${entity}s.add(${entity});
+		}
+		${entity}Service.saveBatch(${entity}s);
+	}
+}

@@ -72,11 +72,16 @@ public interface I${Entity}Service {
     void saveOrUpdate(${Entity} ${entity});
     
     /**
-     * 分页查询
+     * 查询分页
      * @param param
-     * @param page
-     * @param rows
      * @return
      */
     IPage<${Entity}> query(${Entity}QueryParam param);
+    
+    /**
+     * 查询全部
+     * @param param
+     * @return
+     */
+    List<${Entity}> queryAll(${Entity}QueryParam param);
 }

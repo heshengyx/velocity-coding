@@ -9,7 +9,7 @@
 	<body>
 		<div data-options="region:'west',split:true" title="${title}" style="width:20%;min-width:180px;padding:5px;">
 			<ul class="easyui-tree" id="trees">
-				<li iconCls="icon-base"><span>${title}</span><ul><li iconCls="icon-gears"><a href="#" onclick="open1('parser')">${title}</a></li></ul>
+				<li iconCls="icon-base"><span>${title}</span><ul><li iconCls="icon-gears"><a href="javascript:void(0);" onclick="openTab('${title}', '${ctx}/manager/${controller}/list', false);">${title}</a></li></ul>
 			</ul>
 		</div>
 		<div data-options="region:'center'">

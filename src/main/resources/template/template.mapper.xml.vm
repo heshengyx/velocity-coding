@@ -73,13 +73,13 @@
 		   CREATE_BY,
 		   REMARKS)
 		VALUES
-		<foreach collection="list" item="item" index="index" separator="," >
-		  (#{item.id, jdbcType=VARCHAR},
+		<foreach collection="list" item="param" index="index" separator="," >
+		  (#{param.id, jdbcType=VARCHAR},
 		   ${values}
-		   #{item.version, jdbcType=INTEGER},
-		   #{item.createTime, jdbcType=TIMESTAMP},
-		   #{item.createBy, jdbcType=VARCHAR},
-		   #{item.remarks, jdbcType=VARCHAR})
+		   #{param.version, jdbcType=INTEGER},
+		   #{param.createTime, jdbcType=TIMESTAMP},
+		   #{param.createBy, jdbcType=VARCHAR},
+		   #{param.remarks, jdbcType=VARCHAR})
 		</foreach>  
 	</insert>
 	

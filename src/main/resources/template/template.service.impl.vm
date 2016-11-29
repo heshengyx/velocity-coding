@@ -2,9 +2,7 @@ package ${package}.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -15,7 +13,6 @@ import org.springframework.util.StringUtils;
 import ${package}.dao.I${Entity}Dao;
 import ${package}.data.${Entity}Data;
 import ${package}.entity.${Entity};
-import ${package}.enums.StateEnum;
 import ${package}.page.IPage;
 import ${package}.page.IPagination;
 import ${package}.page.Pager;
@@ -74,8 +71,8 @@ public class ${Entity}ServiceImpl implements I${Entity}Service {
         int count = ${entity}Dao.saveBatch(${entity}s);
         if (count == 0) {
             throw new DataAccessResourceFailureException("数据保存失败");
-        }
-        #end
+        }#end
+        //
     }
     
     @Override
@@ -156,4 +153,9 @@ public class ${Entity}ServiceImpl implements I${Entity}Service {
             }
         }, page, rows);
     }
+    
+    @Override
+	public List<${Entity}> queryAll(${Entity}QueryParam param) {
+		return ${entity}Dao.queryAll(param);
+	}
 }

@@ -1,7 +1,11 @@
 package com.velocity.coding;
 
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.util.Properties;
@@ -30,6 +34,7 @@ public class Coding {
 
 		props = new Properties();
 		try {
+			props.load(Coding.class.getResourceAsStream("/conf/conf.properties"));
 			props.load(Coding.class.getResourceAsStream("/conf/terminal.properties"));
 		} catch (Exception e) {
 			System.err.println("不能读取属性文件，请确保属性文件在你的classpath中");
@@ -46,9 +51,81 @@ public class Coding {
 		createTemplateByTag("Dao.Impl", "");
 		createTemplateByTag("Mapper", "I");
 		createTemplateByTag("Controller", "");
+		createTemplateByTag("Junit.Test", "");
 		createTemplateMapperXml();
 		createTemplateJsp();
 		createTemplateJspList();
+		
+		createHessianServlet();
+		createApplicationWeb();
+		createSitemesh();
+	}
+
+	private static void createSitemesh() {
+		boolean flag = Boolean.valueOf(props.getProperty("sitemesh.flag"));
+		if (flag) {
+			StringBuffer sb = new StringBuffer("");
+			String className = props.getProperty("class.name");
+			String path = props.getProperty("sitemesh.file");
+			File file = new File(path);
+			String content = getFileContent(file);
+			if (!content.contains("manager/" + lowerName(className))) {
+				sb = new StringBuffer("");
+				sb.append("<mapping path=\"/manager/" + lowerName(className) + "\" decorator=\"/WEB-INF/layout/managerLayout.jsp\"/>\n");
+				sb.append("    <mapping path=\"/manager/" + lowerName(className) + "/list\" decorator=\"/WEB-INF/layout/tabLayout.jsp\"/>\n");
+				sb.append("    <!-- sitemesh-conf -->");
+				content = content.replace("<!-- sitemesh-conf -->", sb.toString());
+				writeJavaFile(path, content);
+			}
+		}
+	}
+
+	private static void createApplicationWeb() {
+		boolean flag = Boolean.valueOf(props.getProperty("application-web.flag"));
+		if (flag) {
+			String http = props.getProperty("hessian-servlet.http");
+			String packageName = props.getProperty("package.name");
+			String className = props.getProperty("class.name");
+			StringBuffer sb = new StringBuffer("");
+			String path = props.getProperty("application-web.file");
+			File file = new File(path);
+			String content = getFileContent(file);
+			if (!content.contains(lowerName(className) + "Service")) {
+				sb = new StringBuffer("");
+				sb.append("<bean id=\"" + lowerName(className) + "Service\" class=\"org.springframework.remoting.caucho.HessianProxyFactoryBean\">\n");
+				sb.append("        <property name=\"serviceUrl\">\n");
+				sb.append("            <value>" + http + lowerName(className) + "Service</value>\n");
+				sb.append("        </property>\n");
+				sb.append("        <property name=\"serviceInterface\">\n");
+				sb.append("            <value>" + packageName + ".service.I" + className + "Service</value>\n");
+				sb.append("        </property>\n");
+				sb.append("    </bean>\n");
+				sb.append("    <!-- application-web-conf -->");
+				content = content.replace("<!-- application-web-conf -->", sb.toString());
+				writeJavaFile(path, content);
+			}
+		}
+	}
+
+	private static void createHessianServlet() {
+		boolean flag = Boolean.valueOf(props.getProperty("hessian-servlet.flag"));
+		if (flag) {
+			String packageName = props.getProperty("package.name");
+			String className = props.getProperty("class.name");
+			StringBuffer sb = new StringBuffer("");
+			String path = props.getProperty("hessian-servlet.file");
+			File file = new File(path); 
+			String content = getFileContent(file);
+			if (!content.contains(lowerName(className) + "Service")) {
+				sb.append("<bean name=\"/" + lowerName(className) + "Service\" class=\"org.springframework.remoting.caucho.HessianServiceExporter\">\n");
+				sb.append("        <property name=\"service\" ref=\"" + lowerName(className) + "Service\" />\n");
+				sb.append("        <property name=\"serviceInterface\" value=\"" + packageName + ".service.I" + className + "Service\" />\n");
+				sb.append("    </bean>\n");
+				sb.append("    <!-- hessian-servlet-conf -->");
+				content = content.replace("<!-- hessian-servlet-conf -->", sb.toString());
+				writeJavaFile(path, content);
+			}
+		}
 	}
 
 	private static void createTemplateMapperXml() {
@@ -237,7 +314,7 @@ public class Coding {
 					String[] datas = data.split("[,]");
 					for (int i = 0; i < datas.length; i++) {
 						String attributeData = batchAdd(attributes, methods, datas[i], lowerName(className));
-						if (i == 0) attribute = attributeData + "s";
+						if (i == 0) attribute = attributeData;
 					}
 				} else {
 					attribute = batchAdd(attributes, methods, data, lowerName(className));
@@ -352,106 +429,112 @@ public class Coding {
 	}
 	
 	private static void createTemplateJsp() {
-		template = ve.getTemplate("template/template.jsp.vm", encoding);
-		VelocityContext context = new VelocityContext();
-		
-		String className = props.getProperty("class.name");
-		String jspName = lowerName(className);
-		context.put("title", props.getProperty("jsp.title"));
-		context.put("controller", jspName);
-		
-		StringWriter writer = new StringWriter();
-		template.merge(context, writer);
-		writeJavaFile(props.getProperty("jsp.path") + jspName + ".jsp", writer.toString());
+		boolean flag = Boolean.valueOf(props.getProperty("jsp.flag"));
+		if (flag) {
+			template = ve.getTemplate("template/template.jsp.vm", encoding);
+			VelocityContext context = new VelocityContext();
+			
+			String className = props.getProperty("class.name");
+			String jspName = lowerName(className);
+			context.put("title", props.getProperty("jsp.title"));
+			context.put("controller", jspName);
+			
+			StringWriter writer = new StringWriter();
+			template.merge(context, writer);
+			writeJavaFile(props.getProperty("jsp.path") + jspName + ".jsp", writer.toString());
+		}
 	}
 
 	private static void createTemplateJspList() {
-		template = ve.getTemplate("template/template.jsp.list.vm", encoding);
-		VelocityContext context = new VelocityContext();
-		
-		String className = props.getProperty("class.name");
-		String jspName = lowerName(className);
-		context.put("title", props.getProperty("jsp.title"));
-		context.put("searchFlag", props.getProperty("jsp.search.flag"));
-		context.put("controller", jspName);
-		
-		StringBuilder searchInputs = new StringBuilder("");
-		StringBuilder searchParams = new StringBuilder("");
-		String search = props.getProperty("jsp.search.param");
-		if (!StringUtils.isEmpty(search)) {
-			if (search.contains(",")) {
-				String[] names = search.split("[,]");
-				for (String name : names) {
-					searchs(searchInputs, searchParams, name);
+		boolean flag = Boolean.valueOf(props.getProperty("jsp.flag"));
+		if (flag) {
+			template = ve.getTemplate("template/template.jsp.list.vm", encoding);
+			VelocityContext context = new VelocityContext();
+			
+			String className = props.getProperty("class.name");
+			String jspName = lowerName(className);
+			context.put("title", props.getProperty("jsp.title"));
+			context.put("searchFlag", props.getProperty("jsp.search.flag"));
+			context.put("controller", jspName);
+			
+			StringBuilder searchInputs = new StringBuilder("");
+			StringBuilder searchParams = new StringBuilder("");
+			String search = props.getProperty("jsp.search.param");
+			if (!StringUtils.isEmpty(search)) {
+				if (search.contains(",")) {
+					String[] names = search.split("[,]");
+					for (String name : names) {
+						searchs(searchInputs, searchParams, name);
+					}
+				} else {
+					searchs(searchInputs, searchParams, search);
 				}
-			} else {
-				searchs(searchInputs, searchParams, search);
 			}
-		}
-		context.put("searchInputs", searchInputs);
-		context.put("searchParams", searchParams);
-		
-		StringBuilder columns = new StringBuilder("");
-		String column = props.getProperty("jsp.column.entity");
-		if (!StringUtils.isEmpty(column)) {
-			if (column.contains(",")) {
-				String[] names = column.split("[,]");
-				for (String name : names) {
-					columns(columns, name);
+			context.put("searchInputs", searchInputs);
+			context.put("searchParams", searchParams);
+			
+			StringBuilder columns = new StringBuilder("");
+			String column = props.getProperty("jsp.column.entity");
+			if (!StringUtils.isEmpty(column)) {
+				if (column.contains(",")) {
+					String[] names = column.split("[,]");
+					for (String name : names) {
+						columns(columns, name);
+					}
+				} else {
+					columns(columns, column);
 				}
-			} else {
-				columns(columns, column);
 			}
-		}
-		context.put("columns", columns);
-		
-		StringBuilder edits = new StringBuilder("");
-		String edit = props.getProperty("jsp.edit.entity");
-		if (!StringUtils.isEmpty(edit)) {
-			if (edit.contains(",")) {
-				String[] names = edit.split("[,]");
-				for (String name : names) {
-					edits(edits, name);
+			context.put("columns", columns);
+			
+			StringBuilder edits = new StringBuilder("");
+			String edit = props.getProperty("jsp.edit.entity");
+			if (!StringUtils.isEmpty(edit)) {
+				if (edit.contains(",")) {
+					String[] names = edit.split("[,]");
+					for (String name : names) {
+						edits(edits, name);
+					}
+				} else {
+					edits(edits, edit);
 				}
-			} else {
-				edits(edits, edit);
 			}
-		}
-		context.put("edits", edits);
-		
-		StringBuilder batchColumns = new StringBuilder("");
-		StringBuilder batchInputs = new StringBuilder("");
-		String batchColumn = props.getProperty("jsp.batch.column.data");
-		if (!StringUtils.isEmpty(batchColumn)) {
-			if (batchColumn.contains(",")) {
-				String[] names = batchColumn.split("[,]");
-				for (String name : names) {
-					batchColumns(batchColumns, batchInputs, name);
+			context.put("edits", edits);
+			
+			StringBuilder batchColumns = new StringBuilder("");
+			StringBuilder batchInputs = new StringBuilder("");
+			String batchColumn = props.getProperty("jsp.batch.column.data");
+			if (!StringUtils.isEmpty(batchColumn)) {
+				if (batchColumn.contains(",")) {
+					String[] names = batchColumn.split("[,]");
+					for (String name : names) {
+						batchColumns(batchColumns, batchInputs, name);
+					}
+				} else {
+					batchColumns(batchColumns, batchInputs, batchColumn);
 				}
-			} else {
-				batchColumns(batchColumns, batchInputs, batchColumn);
 			}
-		}
-		context.put("batchColumns", batchColumns);
-		context.put("batchInputs", batchInputs);
-		
-		StringBuilder updates = new StringBuilder("");
-		String update = props.getProperty("jsp.update.entity");
-		if (!StringUtils.isEmpty(update)) {
-			if (update.contains(",")) {
-				String[] names = update.split("[,]");
-				for (String name : names) {
-					updates(updates, name);
+			context.put("batchColumns", batchColumns);
+			context.put("batchInputs", batchInputs);
+			
+			StringBuilder updates = new StringBuilder("");
+			String update = props.getProperty("jsp.update.entity");
+			if (!StringUtils.isEmpty(update)) {
+				if (update.contains(",")) {
+					String[] names = update.split("[,]");
+					for (String name : names) {
+						updates(updates, name);
+					}
+				} else {
+					updates(updates, update);
 				}
-			} else {
-				updates(updates, update);
 			}
+			context.put("updates", updates);
+			
+			StringWriter writer = new StringWriter();
+			template.merge(context, writer);
+			writeJavaFile(props.getProperty("jsp.path") + jspName + "List.jsp", writer.toString());
 		}
-		context.put("updates", updates);
-		
-		StringWriter writer = new StringWriter();
-		template.merge(context, writer);
-		writeJavaFile(props.getProperty("jsp.path") + jspName + "List.jsp", writer.toString());
 	}
 
 	private static void updates(StringBuilder updates, String index) {
@@ -549,5 +632,26 @@ public class Coding {
 		/*char[] cs = name.toCharArray();
 		cs[0] -= 32;
 		return String.valueOf(cs);*/
+	}
+	
+	public static String getFileContent(File file) {
+		Long filelength = file.length(); // 获取文件长度
+		byte[] filecontent = new byte[filelength.intValue()];
+		FileInputStream in = null;
+		try {
+			in = new FileInputStream(file);
+			in.read(filecontent);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return new String(filecontent);// 返回文件内容,默认编码
 	}
 }
