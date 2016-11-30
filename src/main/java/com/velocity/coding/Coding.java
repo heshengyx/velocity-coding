@@ -581,11 +581,11 @@ public class Coding {
 				String attributeData = props.getProperty("param.attribute" + param[i]);
 				String[] attributeNames = attributeData.split("[,]");
 				inputs.append("<input type=\"text\" class=\"easyui-datebox\" id=\"").append(attributeNames[0])
-						.append("Search\" style=\"width:100px;\">");
+						.append("Query\" style=\"width:100px;\">");
 				if (i == 0)
 					inputs.append("~\n");
 				searchParams.append(attributeNames[0]).append(": $('#").append(attributeNames[0])
-						.append("Search').val(),\n");
+						.append("Query').val(),\n");
 			}
 		} else {
 			String attributeData = props.getProperty("param.attribute" + searchs[0]);

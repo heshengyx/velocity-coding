@@ -17,8 +17,8 @@
         	${searchInputs}
             <td class="td-right">创建时间：</td>
             <td>
-            <input class="easyui-datebox" type="text" id="createDateBegin" style="width:100px;">~
-            <input class="easyui-datebox" type="text" id="createDateEnd" style="width:100px;"></td>
+            <input class="easyui-datebox" type="text" id="createDateBeginQuery" style="width:100px;">~
+            <input class="easyui-datebox" type="text" id="createDateEndQuery" style="width:100px;"></td>
         </tr>
         <tr>
             <td></td>
@@ -33,9 +33,9 @@
     #end
     <!-- datagrid -->
     <div id="tools">
-        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" id="addBtn">新增</a>
-        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true" id="addBatchBtn">批量</a>
-        <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" id="deleteBtn">删除</a>
+        <a class="easyui-linkbutton" href="javascript:void(0);" data-options="iconCls:'icon-add',plain:true" id="addBtn">新增</a>
+        <a class="easyui-linkbutton" href="javascript:void(0);" data-options="iconCls:'icon-edit',plain:true" id="addBatchBtn">批量</a>
+        <a class="easyui-linkbutton" href="javascript:void(0);" data-options="iconCls:'icon-remove',plain:true" id="deleteBtn">删除</a>
     </div>
     <table id="datagrid" style="width:100%;"></table>
     <!-- datagrid -->
@@ -59,25 +59,25 @@
     </div>
     <!-- 新增 -->
     <!-- 批量 -->
-    <div class="easyui-window" id="editBatchWin" data-options="modal:true,closed:true,resizable:false,
+    <div class="easyui-window" id="addBatchWin" data-options="modal:true,closed:true,resizable:false,
                 minimizable:false,
                 maximizable:false,
                 draggable:true,
                 collapsible:false"
                 style="width:350px;height:400px;">
-        <div id="tb" style="height:auto">
+        <div id="addTools">
             <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="append()">添加行</a>
             <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" onclick="removeit()">删除行</a>
             <a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="saveBatch()">保存</a>
         </div>
-        <table id="dgBatch" style="width:100%;">
+        <table id="addBatchDatagrid" style="width:100%;">
             <thead>
                 <tr>
                     ${batchColumns}
                 </tr>
             </thead>
         </table>
-        <form id="editBatchForm" method="post"></form>
+        <form id="addBatchForm" method="post"></form>
     </div>
     <!-- 批量 -->
     </div>
@@ -117,8 +117,8 @@
         $('#searchBtn').click(function() {
             $('#datagrid').datagrid('load', {
                 ${searchParams}
-                createDateBegin: $('#createDateBegin').datebox('getValue'),
-                createDateEnd: $('#createDateEnd').datebox('getValue')
+                createDateBegin: $('#createDateBeginQuery').datebox('getValue'),
+                createDateEnd: $('#createDateEndQuery').datebox('getValue')
             });
         });
         
@@ -142,11 +142,11 @@
     }
     function saveBatch() {
         if (endEditing()){
-            var rows = $('#dgBatch').datagrid('getChanges');
+            var rows = $('#addBatchDatagrid').datagrid('getChanges');
             if (rows.length) {
-                var inserted = $('#dgBatch').datagrid('getChanges', "inserted");
+                var inserted = $('#addBatchDatagrid').datagrid('getChanges', "inserted");
                 if (inserted.length) {
-                    var form = $('#editBatchForm');
+                    var form = $('#addBatchForm');
                     form.children().remove();
                     for (var i=0; i<inserted.length; i++) {
                         ${batchInputs}
@@ -154,7 +154,7 @@
                     var url = "${ctx}/manager/${controller}/saveBatch"
                     $.post(url, form.serialize(), function(result) {
                         if (result.status) {
-                            $('#editBatchWin').window('close');
+                            $('#addBatchWin').window('close');
                             $('#datagrid').datagrid('reload');
                         } else {
                             $.messager.alert({
