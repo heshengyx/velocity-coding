@@ -11,7 +11,7 @@
     <div class="tag-content">
     #if("" != $searchFlag)
     <!-- search -->
-    <form id="searchForm" method="post">
+    <form class="data-form" id="searchForm" method="post">
     <table>
         <tr>
         	${searchInputs}
@@ -109,7 +109,7 @@
                     return to_date_hms(val);
                 }},
                 {field: 'opts', title: '操作', formatter:function(val, row, idx) {
-                    return '<a href="#" class="easyui-linkbutton" data-options="iconCls:\'icon-edit\',plain:true" onclick="updateById(\'' + row.id + '\')">修改</a>';
+                    return '<a href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:\'icon-edit\',plain:true" onclick="updateById(\'' + row.id + '\')">修改</a>';
                 }}
             ]]
         });
