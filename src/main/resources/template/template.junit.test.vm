@@ -23,4 +23,13 @@ public class ${Entity}JunitTest extends BaseJunitTest {
 		}
 		${entity}Service.saveBatch(${entity}s);
 	}
+	
+	@Test
+	public void testQueryAll() {
+		${Entity}QueryParam param = new ${Entity}QueryParam();
+		List<${Entity}> ${entity}s = ${entity}Service.queryAll(param);
+		for (${Entity} ${entity} : ${entity}s) {
+			System.out.println(${entity}.getId());
+		}
+	}
 }
