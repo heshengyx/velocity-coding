@@ -50,17 +50,17 @@
 		INSERT INTO ${table}
 		  (ID,
 		   ${columns}
-		   VERSION,
-		   CREATE_TIME,
-		   CREATE_BY,
-		   REMARKS)
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)
 		VALUES
 		  (#{param.id, jdbcType=VARCHAR},
 		   ${values}
-		   #{param.version, jdbcType=INTEGER},
-		   #{param.createTime, jdbcType=TIMESTAMP},
-		   #{param.createBy, jdbcType=VARCHAR},
-		   #{param.remarks, jdbcType=VARCHAR})
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR})
 	</insert>
 	
 	<!-- 批量新增 -->
@@ -68,18 +68,18 @@
 		INSERT INTO ${table}
 		  (ID,
 		   ${columns}
-		   VERSION,
-		   CREATE_TIME,
-		   CREATE_BY,
-		   REMARKS)
+		   	VERSION,
+		   	CREATE_TIME,
+		   	CREATE_BY,
+		   	REMARKS)
 		VALUES
 		<foreach collection="list" item="param" index="index" separator="," >
 		  (#{param.id, jdbcType=VARCHAR},
 		   ${values}
-		   #{param.version, jdbcType=INTEGER},
-		   #{param.createTime, jdbcType=TIMESTAMP},
-		   #{param.createBy, jdbcType=VARCHAR},
-		   #{param.remarks, jdbcType=VARCHAR})
+		   	#{param.version, jdbcType=INTEGER},
+		   	#{param.createTime, jdbcType=TIMESTAMP},
+		   	#{param.createBy, jdbcType=VARCHAR},
+		   	#{param.remarks, jdbcType=VARCHAR})
 		</foreach>  
 	</insert>
 	

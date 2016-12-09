@@ -5,7 +5,7 @@ import java.util.Map;
 
 public enum JdbcTypeEnum {
 
-	STRING("VARCHAR"), DATE("TIMESTAMP");
+	STRING("VARCHAR"), DATE("TIMESTAMP"), INT("INTEGER");
 
 	private String text;
 	private static Map<String, String> types = new HashMap<String, String>();

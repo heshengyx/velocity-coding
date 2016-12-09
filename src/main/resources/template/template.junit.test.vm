@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import ${package}.entity.${Entity};
 import ${package}.service.I${Entity}Service;
+import ${package}.param.${Entity}QueryParam;
 
 public class ${Entity}JunitTest extends BaseJunitTest {
 
