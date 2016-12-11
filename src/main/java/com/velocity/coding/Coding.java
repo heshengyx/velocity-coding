@@ -35,7 +35,7 @@ public class Coding {
 		props = new Properties();
 		try {
 			props.load(Coding.class.getResourceAsStream("/conf/conf.properties"));
-			props.load(Coding.class.getResourceAsStream("/conf/instantaneous.properties"));
+			props.load(Coding.class.getResourceAsStream("/conf/recognitionLog.properties"));
 		} catch (Exception e) {
 			System.err.println("不能读取属性文件，请确保属性文件在你的classpath中");
 		}
